@@ -80,7 +80,7 @@ export function DigraphIntroduction({ digraph, onComplete }: Props) {
         setStep('practice');
         break;
       case 'practice':
-        await speak(digraph.audioText);
+        await speak(digraph.soundLabel);
         setTimeout(() => {
           setIsPlaying(false);
           onComplete();

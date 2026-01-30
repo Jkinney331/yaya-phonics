@@ -15,6 +15,7 @@ export interface Digraph {
   sound: string;
   audioText: string;
   phonetic: string;
+  soundLabel: string;
   examplePhrase: string;
   introAudio: IntroAudio;
   mouthPosition: string;
@@ -35,6 +36,7 @@ export const digraphs: Digraph[] = [
     sound: '/ʃ/',
     audioText: 'shhhh... like when we say be quiet. Ship. Sheep. Shell.',
     phonetic: 'shh, shh, shh',
+    soundLabel: 'shhh',
     examplePhrase: 'like in ship',
     introAudio: {
       letter1: 'This is the letter S. It usually says sss.',
@@ -69,6 +71,7 @@ export const digraphs: Digraph[] = [
     sound: '/tʃ/',
     audioText: 'ch ch ch... like a choo choo train! Cheese. Chair. Chicken.',
     phonetic: 'ch, ch, ch',
+    soundLabel: 'chhh',
     examplePhrase: 'like in cheese',
     introAudio: {
       letter1: 'This is the letter C. It can say kuh or sss.',
@@ -103,6 +106,7 @@ export const digraphs: Digraph[] = [
     sound: '/θ/',
     audioText: 'thhhh... put your tongue between your teeth! This. That. Three.',
     phonetic: 'th, th, th',
+    soundLabel: 'thhh',
     examplePhrase: 'like in thumb',
     introAudio: {
       letter1: 'This is the letter T. It usually says tuh.',
@@ -137,6 +141,7 @@ export const digraphs: Digraph[] = [
     sound: '/w/',
     audioText: 'wh wh wh... like blowing out a candle! Whale. What. White.',
     phonetic: 'wh, wh, wh',
+    soundLabel: 'whhh',
     examplePhrase: 'like in whale',
     introAudio: {
       letter1: 'This is the letter W. It says wuh.',
@@ -165,6 +170,7 @@ export const digraphs: Digraph[] = [
     sound: '/k/',
     audioText: 'ck ck ck... a quick sound at the end! Duck. Sock. Truck.',
     phonetic: 'ck, ck, ck',
+    soundLabel: 'kuh',
     examplePhrase: 'like in duck',
     introAudio: {
       letter1: 'This is the letter C. It can say kuh.',

@@ -1,9 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase =
+  supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 // Types for our database tables
 export interface PlayerProfile {
@@ -55,6 +56,9 @@ export const syncProgressToCloud = async (
     iceCreamRedeemed: boolean;
   }
 ) => {
+  if (!supabase) {
+    throw new Error('Supabase is not configured.');
+  }
   // Sync progress for each digraph
   for (const [digraphId, data] of Object.entries(progress)) {
     await supabase
@@ -92,6 +96,9 @@ export const syncProgressToCloud = async (
 };
 
 export const loadProgressFromCloud = async (playerId: string) => {
+  if (!supabase) {
+    throw new Error('Supabase is not configured.');
+  }
   const { data: progressData } = await supabase
     .from('player_progress')
     .select('*')
@@ -107,6 +114,9 @@ export const loadProgressFromCloud = async (playerId: string) => {
 };
 
 export const createPlayer = async (playerName: string) => {
+  if (!supabase) {
+    throw new Error('Supabase is not configured.');
+  }
   const { data, error } = await supabase
     .from('player_profiles')
     .insert({ player_name: playerName })
@@ -118,6 +128,9 @@ export const createPlayer = async (playerName: string) => {
 };
 
 export const getOrCreatePlayer = async (playerName: string = 'Yaya') => {
+  if (!supabase) {
+    throw new Error('Supabase is not configured.');
+  }
   // Try to find existing player
   const { data: existing } = await supabase
     .from('player_profiles')

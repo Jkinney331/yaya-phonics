@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 
 export function PlayTimer() {
-  const { sessionStartTime, todayPlayTimeSeconds } = useGameStore();
+  const { sessionStartTime, todayPlayTimeSeconds, checkAndUpdateStreak } = useGameStore();
   const [currentTime, setCurrentTime] = useState(todayPlayTimeSeconds);
 
   // Update timer every second
@@ -21,6 +21,12 @@ export function PlayTimer() {
 
     return () => clearInterval(interval);
   }, [sessionStartTime, todayPlayTimeSeconds]);
+
+  useEffect(() => {
+    if (currentTime >= 300) {
+      checkAndUpdateStreak();
+    }
+  }, [currentTime, checkAndUpdateStreak]);
 
   const minutes = Math.floor(currentTime / 60);
   const seconds = currentTime % 60;

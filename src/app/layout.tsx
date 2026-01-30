@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { CloudSyncProvider } from "@/components/CloudSyncProvider";
+import { VoiceToggle } from "@/components/VoiceToggle";
 
 export const metadata: Metadata = {
   title: "Yaya's Sound Safari 🦕",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body className="antialiased">
         <CloudSyncProvider>
           {children}
+          <VoiceToggle />
         </CloudSyncProvider>
       </body>
     </html>

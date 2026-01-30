@@ -36,6 +36,9 @@ export interface GameState {
   sessionStartTime: number | null;
   lastSessionDate: string | null;
 
+  // Audio
+  isMuted: boolean;
+
   // Sync status
   isSyncing: boolean;
   lastSyncedAt: string | null;
@@ -55,6 +58,10 @@ export interface GameState {
   endSession: () => void;
   checkAndUpdateStreak: () => void;
   redeemIceCream: () => void;
+
+  // Audio actions
+  toggleMuted: () => void;
+  setMuted: (value: boolean) => void;
 
   // Cloud sync
   initializePlayer: () => Promise<void>;
@@ -91,6 +98,7 @@ export const useGameStore = create<GameState>()(
       todayPlayTimeSeconds: 0,
       sessionStartTime: null,
   lastSessionDate: null,
+      isMuted: false,
       isSyncing: false,
       lastSyncedAt: null,
 
@@ -202,14 +210,18 @@ export const useGameStore = create<GameState>()(
       },
 
       checkAndUpdateStreak: () => {
-        const { todayPlayTimeSeconds, lastPlayDate, streakDays, streakGoal } = get();
+        const { todayPlayTimeSeconds, sessionStartTime, lastPlayDate, streakDays, streakGoal } = get();
         const today = getTodayDate();
         const yesterday = getYesterdayDate();
 
         // Need at least 5 minutes (300 seconds) for a successful day
         const MIN_PLAY_TIME = 300;
+        const activeSessionSeconds = sessionStartTime
+          ? Math.floor((Date.now() - sessionStartTime) / 1000)
+          : 0;
+        const effectivePlayTimeSeconds = todayPlayTimeSeconds + activeSessionSeconds;
 
-        if (todayPlayTimeSeconds >= MIN_PLAY_TIME) {
+        if (effectivePlayTimeSeconds >= MIN_PLAY_TIME) {
           let newStreakDays = streakDays;
 
           if (lastPlayDate === yesterday) {
@@ -242,7 +254,16 @@ export const useGameStore = create<GameState>()(
         get().syncToCloud();
       },
 
+      toggleMuted: () => {
+        set((state) => ({ isMuted: !state.isMuted }));
+      },
+
+      setMuted: (value) => {
+        set({ isMuted: value });
+      },
+
       initializePlayer: async () => {
+        if (!supabase) return;
         const state = get();
         if (state.playerId) return;
 
@@ -273,6 +294,7 @@ export const useGameStore = create<GameState>()(
       },
 
       syncToCloud: async () => {
+        if (!supabase) return;
         const state = get();
         if (!state.playerId || state.isSyncing) return;
 
@@ -325,6 +347,7 @@ export const useGameStore = create<GameState>()(
       },
 
       loadFromCloud: async () => {
+        if (!supabase) return;
         const state = get();
         if (!state.playerId) return;
 

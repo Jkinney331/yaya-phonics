@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useGameStore } from '@/stores/gameStore';
 
 interface UseSpeechSynthesisOptions {
   rate?: number;
@@ -12,6 +13,7 @@ export const useSpeechSynthesis = (options: UseSpeechSynthesisOptions = {}) => {
   const { rate = 0.8, pitch = 1.1, volume = 1 } = options;
   const [speaking, setSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isMuted = useGameStore((state) => state.isMuted);
 
   // Stop any currently playing audio
   const stop = useCallback(() => {
@@ -23,9 +25,16 @@ export const useSpeechSynthesis = (options: UseSpeechSynthesisOptions = {}) => {
     setSpeaking(false);
   }, []);
 
+  useEffect(() => {
+    if (isMuted) {
+      stop();
+    }
+  }, [isMuted, stop]);
+
   // Fallback to Web Speech API
   const fallbackSpeak = useCallback(
     (text: string) => {
+      if (isMuted) return;
       if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
       const utterance = new SpeechSynthesisUtterance(text);
@@ -39,12 +48,16 @@ export const useSpeechSynthesis = (options: UseSpeechSynthesisOptions = {}) => {
 
       window.speechSynthesis.speak(utterance);
     },
-    [rate, pitch, volume]
+    [rate, pitch, volume, isMuted]
   );
 
   // Main speak function using ElevenLabs
   const speak = useCallback(
     async (text: string) => {
+      if (isMuted) {
+        stop();
+        return;
+      }
       stop(); // Stop any current audio
 
       try {
@@ -86,7 +99,7 @@ export const useSpeechSynthesis = (options: UseSpeechSynthesisOptions = {}) => {
         fallbackSpeak(text);
       }
     },
-    [stop, fallbackSpeak]
+    [stop, fallbackSpeak, isMuted]
   );
 
   // Speak digraph with example phrase
