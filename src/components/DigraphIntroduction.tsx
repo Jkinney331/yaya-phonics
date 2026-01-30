@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { Digraph } from '@/data/digraphs';
@@ -14,42 +14,101 @@ type IntroStep = 'letter1' | 'letter2' | 'together' | 'practice';
 
 export function DigraphIntroduction({ digraph, onComplete }: Props) {
   const [step, setStep] = useState<IntroStep>('letter1');
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [canAdvance, setCanAdvance] = useState(false);
   const { speak, speaking } = useSpeechSynthesis();
+  const hasPlayedRef = useRef(false);
 
   const letter1 = digraph.letters[0];
   const letter2 = digraph.letters[1];
 
-  const handleNext = async () => {
-    if (isPlaying || speaking) return;
-    setIsPlaying(true);
+  // Auto-play audio when entering each step
+  useEffect(() => {
+    // Prevent double-playing
+    if (hasPlayedRef.current) return;
+    hasPlayedRef.current = true;
+    setCanAdvance(false);
+
+    const playStepAudio = async () => {
+      let audioText = '';
+      switch (step) {
+        case 'letter1':
+          audioText = digraph.introAudio.letter1;
+          break;
+        case 'letter2':
+          audioText = digraph.introAudio.letter2;
+          break;
+        case 'together':
+          audioText = digraph.introAudio.together;
+          break;
+        case 'practice':
+          // Play the digraph sound so they know what to say
+          audioText = digraph.audioText;
+          break;
+      }
+
+      await speak(audioText);
+
+      // Estimate audio duration based on text length (approx 80ms per character)
+      // Then add buffer time for the audio to actually finish playing
+      const estimatedDuration = Math.min(Math.max(audioText.length * 80, 2000), 5000);
+
+      setTimeout(() => {
+        setCanAdvance(true);
+      }, estimatedDuration);
+    };
+
+    // Small delay before playing audio to let the visual transition complete
+    const timer = setTimeout(playStepAudio, 600);
+    return () => clearTimeout(timer);
+  }, [step, digraph, speak]);
+
+  const handleNext = () => {
+    if (!canAdvance || speaking) return;
+
+    // Reset for next step
+    hasPlayedRef.current = false;
+    setCanAdvance(false);
 
     switch (step) {
       case 'letter1':
-        await speak(digraph.introAudio.letter1);
-        setTimeout(() => {
-          setStep('letter2');
-          setIsPlaying(false);
-        }, 500);
+        setStep('letter2');
         break;
       case 'letter2':
-        await speak(digraph.introAudio.letter2);
-        setTimeout(() => {
-          setStep('together');
-          setIsPlaying(false);
-        }, 500);
+        setStep('together');
         break;
       case 'together':
-        await speak(digraph.introAudio.together);
-        setTimeout(() => {
-          setStep('practice');
-          setIsPlaying(false);
-        }, 500);
+        setStep('practice');
         break;
       case 'practice':
         onComplete();
         break;
     }
+  };
+
+  // Replay audio button handler
+  const handleReplay = async () => {
+    if (speaking) return;
+    setCanAdvance(false);
+
+    let audioText = '';
+    switch (step) {
+      case 'letter1':
+        audioText = digraph.introAudio.letter1;
+        break;
+      case 'letter2':
+        audioText = digraph.introAudio.letter2;
+        break;
+      case 'together':
+        audioText = digraph.introAudio.together;
+        break;
+      case 'practice':
+        audioText = digraph.audioText;
+        break;
+    }
+
+    await speak(audioText);
+    const estimatedDuration = Math.min(Math.max(audioText.length * 80, 2000), 5000);
+    setTimeout(() => setCanAdvance(true), estimatedDuration);
   };
 
   return (
@@ -151,14 +210,26 @@ export function DigraphIntroduction({ digraph, onComplete }: Props) {
         )}
       </AnimatePresence>
 
+      {/* Replay button */}
       <motion.button
-        className="mt-8 bg-gradient-to-r from-pink-500 to-purple-500 text-white
-                   px-10 py-5 rounded-full text-2xl font-bold shadow-lg
-                   disabled:opacity-50"
+        className="mt-4 text-gray-500 flex items-center gap-2"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
+        onClick={handleReplay}
+        disabled={speaking}
+      >
+        <span className="text-2xl">🔊</span>
+        <span>Hear again</span>
+      </motion.button>
+
+      <motion.button
+        className="mt-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white
+                   px-10 py-5 rounded-full text-2xl font-bold shadow-lg
+                   disabled:opacity-50"
+        whileHover={canAdvance ? { scale: 1.05 } : {}}
+        whileTap={canAdvance ? { scale: 0.95 } : {}}
         onClick={handleNext}
-        disabled={isPlaying || speaking}
+        disabled={!canAdvance || speaking}
       >
         {step === 'practice' ? 'I Said It! ✨' : 'Next →'}
       </motion.button>
