@@ -31,7 +31,8 @@ export default function ExplorePage() {
   const shouldShowIntro = !hasSeenIntro && !showIntro;
 
   const handleSoundClick = () => {
-    speakDigraph(currentDigraph.audioText, currentDigraph.examplePhrase);
+    // audioText already contains full phrase with examples, no need for examplePhrase
+    speak(currentDigraph.audioText);
   };
 
   const handleWordClick = (word: string) => {

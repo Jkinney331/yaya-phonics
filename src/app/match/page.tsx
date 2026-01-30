@@ -98,7 +98,8 @@ export default function MatchPage() {
 
     if (correct) {
       confettiReward();
-      speak('Amazing! Great job!');
+      // Say the word they got correct, then praise
+      speak(`${word.word}! Amazing! Great job!`);
       setScore(score + 1);
       recordPracticeAttempt(round.digraph.id, true);
 
@@ -108,8 +109,10 @@ export default function MatchPage() {
         addSticker(stickers[Math.floor(Math.random() * stickers.length)]);
       }
     } else {
-      speak(`Let's try again! Listen for the sound.`);
-      setTimeout(() => speakSound(round.digraph.audioText), 1500);
+      // Say what they clicked, then give the correct answer
+      speak(`That's ${word.word}. Let's find ${round.correctWord.word}!`);
+      // Play the digraph sound again so they can hear it
+      setTimeout(() => speak(round.digraph.audioText), 2000);
       recordPracticeAttempt(round.digraph.id, false);
     }
 
@@ -117,7 +120,7 @@ export default function MatchPage() {
     setTimeout(() => {
       setRoundCount(roundCount + 1);
       startNewRound();
-    }, correct ? 2000 : 2500);
+    }, correct ? 2500 : 3500);
   };
 
   if (!round) return null;

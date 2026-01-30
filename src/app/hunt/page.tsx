@@ -84,7 +84,8 @@ export default function HuntPage() {
 
     if (correct) {
       confettiReward();
-      speak('Yes! You found it!');
+      // Say the letters they found correctly
+      speak(`Yes! You found ${round.targetDigraph.letters}!`);
       setScore(score + 1);
       const newStreak = streak + 1;
       setStreak(newStreak);
@@ -93,7 +94,7 @@ export default function HuntPage() {
       // Increase difficulty after 3 correct in a row
       if (newStreak % 3 === 0 && difficulty < 5) {
         setDifficulty(difficulty + 1);
-        speak('Level up!');
+        setTimeout(() => speak('Level up!'), 1000);
       }
 
       // Award rainbow stripe every 5 correct
@@ -107,14 +108,17 @@ export default function HuntPage() {
         addSticker(stickers[Math.floor(Math.random() * stickers.length)]);
       }
     } else {
-      speak(`That's ${digraph.letters}. Let's find ${round.targetDigraph.letters}!`);
+      // Say what they clicked was wrong, then play the correct sound
+      speak(`That was ${digraph.letters}. Listen for ${round.targetDigraph.letters}!`);
+      // Play the actual sound of the correct digraph so they can hear it
+      setTimeout(() => speak(round.targetDigraph.audioText), 1500);
       setStreak(0);
       recordPracticeAttempt(round.targetDigraph.id, false);
     }
 
     setTimeout(() => {
       startNewRound();
-    }, correct ? 1500 : 2500);
+    }, correct ? 2000 : 3500);
   };
 
   if (!round) return null;
