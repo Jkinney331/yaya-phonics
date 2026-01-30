@@ -34,6 +34,7 @@ export interface GameState {
   // Play timer
   todayPlayTimeSeconds: number;
   sessionStartTime: number | null;
+  lastSessionDate: string | null;
 
   // Sync status
   isSyncing: boolean;
@@ -89,6 +90,7 @@ export const useGameStore = create<GameState>()(
       iceCreamRedeemed: false,
       todayPlayTimeSeconds: 0,
       sessionStartTime: null,
+  lastSessionDate: null,
       isSyncing: false,
       lastSyncedAt: null,
 
@@ -172,13 +174,14 @@ export const useGameStore = create<GameState>()(
       // Streak and timer actions
       startSession: () => {
         const today = getTodayDate();
-        const { lastPlayDate, todayPlayTimeSeconds } = get();
+        const { lastSessionDate } = get();
 
         // Reset today's time if it's a new day
-        if (lastPlayDate !== today) {
+        if (lastSessionDate !== today) {
           set({
             sessionStartTime: Date.now(),
             todayPlayTimeSeconds: 0,
+            lastSessionDate: today,
           });
         } else {
           set({ sessionStartTime: Date.now() });
@@ -286,6 +289,7 @@ export const useGameStore = create<GameState>()(
                 practice_correct: data.practiceCorrect,
                 practice_attempts: data.practiceAttempts,
                 mastered: data.mastered,
+                has_seen_intro: data.hasSeenIntro,
                 updated_at: new Date().toISOString(),
               },
               {
@@ -338,7 +342,7 @@ export const useGameStore = create<GameState>()(
                 practiceCorrect: row.practice_correct,
                 practiceAttempts: row.practice_attempts,
                 mastered: row.mastered,
-                hasSeenIntro: row.explored, // If explored, assume intro was seen
+                hasSeenIntro: row.has_seen_intro ?? row.explored,
               };
             }
             set({ progress });

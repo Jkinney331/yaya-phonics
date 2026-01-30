@@ -21,6 +21,7 @@ export interface PlayerProgress {
   practice_correct: number;
   practice_attempts: number;
   mastered: boolean;
+  has_seen_intro: boolean;
   updated_at: string;
 }
 
@@ -30,14 +31,29 @@ export interface PlayerRewards {
   stars: number;
   stickers: string[];
   rainbow_stripes: number;
+  streak_days: number;
+  last_play_date: string | null;
+  ice_cream_earned: boolean;
+  ice_cream_redeemed: boolean;
   updated_at: string;
 }
 
 // Helper functions for syncing progress
 export const syncProgressToCloud = async (
   playerId: string,
-  progress: Record<string, { explored: boolean; practiceCorrect: number; practiceAttempts: number; mastered: boolean }>,
-  rewards: { stars: number; stickers: string[]; rainbowStripes: number }
+  progress: Record<
+    string,
+    { explored: boolean; practiceCorrect: number; practiceAttempts: number; mastered: boolean; hasSeenIntro: boolean }
+  >,
+  rewards: {
+    stars: number;
+    stickers: string[];
+    rainbowStripes: number;
+    streakDays: number;
+    lastPlayDate: string | null;
+    iceCreamEarned: boolean;
+    iceCreamRedeemed: boolean;
+  }
 ) => {
   // Sync progress for each digraph
   for (const [digraphId, data] of Object.entries(progress)) {
@@ -50,6 +66,7 @@ export const syncProgressToCloud = async (
         practice_correct: data.practiceCorrect,
         practice_attempts: data.practiceAttempts,
         mastered: data.mastered,
+        has_seen_intro: data.hasSeenIntro,
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'player_id,digraph_id',
@@ -64,6 +81,10 @@ export const syncProgressToCloud = async (
       stars: rewards.stars,
       stickers: rewards.stickers,
       rainbow_stripes: rewards.rainbowStripes,
+      streak_days: rewards.streakDays,
+      last_play_date: rewards.lastPlayDate,
+      ice_cream_earned: rewards.iceCreamEarned,
+      ice_cream_redeemed: rewards.iceCreamRedeemed,
       updated_at: new Date().toISOString(),
     }, {
       onConflict: 'player_id',

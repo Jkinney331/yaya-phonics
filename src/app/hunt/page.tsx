@@ -84,8 +84,8 @@ export default function HuntPage() {
 
     if (correct) {
       confettiReward();
-      // Say the letters they found correctly
-      speak(`Yes! You found ${round.targetDigraph.letters}!`);
+      // Say the sound instead of spelling the letters
+      speak(`Yes! You found the ${round.targetDigraph.letters} sound!`);
       setScore(score + 1);
       const newStreak = streak + 1;
       setStreak(newStreak);
@@ -109,7 +109,9 @@ export default function HuntPage() {
       }
     } else {
       // Say what they clicked was wrong, then play the correct sound
-      speak(`That was ${digraph.letters}. Listen for ${round.targetDigraph.letters}!`);
+      speak(
+        `That was the ${digraph.letters} sound. Listen for the ${round.targetDigraph.letters} sound!`
+      );
       // Play the actual sound of the correct digraph so they can hear it
       setTimeout(() => speak(round.targetDigraph.audioText), 1500);
       setStreak(0);
